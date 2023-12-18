@@ -1,0 +1,24 @@
+{
+  "require": {
+    "phpoffice/phpspreadsheet": "^1.29.0",
+    "psr/simple-cache": "^3.0",
+    "galbar/jsonpath": "^3.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "symfony/cache": "*",
+    "symfony/var-dumper": "*"
+  },
+  "config": {
+    "platform-check": true,
+    "optimize-autoloader": true,
+    "platform": {
+      "php": "8.2.0"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "Langmans\\PhpSpreadsheet\\": "src"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 {
   "require": {
+    "php": "~8.2.0",
     "phpoffice/phpspreadsheet": "^1.29.0",
     "psr/simple-cache": "^3.0",
     "galbar/jsonpath": "^3.0"

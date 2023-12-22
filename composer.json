@@ -1,4 +1,5 @@
 {
+  "name": "langmans/spreadsheettemplate",
   "require": {
     "php": "~8.2.0",
     "phpoffice/phpspreadsheet": "^1.29.0",

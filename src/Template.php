@@ -1,6 +1,6 @@
 <?php
 
-namespace Langmans\PhpSpreadsheet;
+namespace Langmans\SpreadsheetTemplate;
 
 use JsonPath\JsonObject;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -12,11 +12,19 @@ class Template
     protected Spreadsheet $spreadsheet;
     protected Parser $parser;
 
+    protected array $formatters = [];
+
     protected array $cellData;
 
     public function __construct(protected CacheInterface $cache, Parser $parser = null)
     {
         $this->parser = $parser ?? new Parser();
+    }
+
+    public function setFormatter(string $name, callable $formatter): static
+    {
+        $this->formatters[$name] = $formatter;
+        return $this;
     }
 
     public function load(string $path, array|object $data): Spreadsheet
@@ -54,19 +62,46 @@ class Template
             $row = $cellData['row'];
 
             // jsonpath always returns an array, even if there's only one value. So just loop through the items.
-            // when we encounter different lengths for each tag, then we should loop over the longest one.
-            // we should always have at least one row, so we can replace the tags.
+            // when we encounter different lengths for each find, then we should loop over the longest one.
+            // we should always have at least one row, so we can find the tags.
             $allReplacements = [];
             $rows = 1;
-            foreach ($cellData['replacements'] as $tag => $path) {
+            foreach ($cellData['replacements'] as $find => [$path, $settings]) {
                 $replacements = $json->get($path);
                 $rows = max($rows, count($replacements));
-                $allReplacements[$tag] = $replacements;
+                $allReplacements[$find] = [$replacements, $settings];
             }
+
             for ($i = 0; $i < $rows; $i++) {
                 $replacements = [];
-                foreach ($allReplacements as $tag => $replacementValues) {
-                    $replacements[$tag] = $replacementValues[$i] ?? null;
+                foreach ($allReplacements as $find => [$replacementValues, $settings]) {
+                    $replacement = $replacementValues[$i] ?? null;
+                    $formatter = $this->formatters[$settings['formatter'] ?? null] ?? null;
+                    if (is_callable($formatter)) {
+                        $replacement = $formatter($replacement, $i, $settings);
+                    }
+
+                    if (!($replacement === null || $replacement === '')) {
+                        // example: @{$.foo[*].bar}{"prefixWhenValue":"€ "}
+                        if (isset($settings['prefixWhenValue'])) {
+                            $replacement = $settings['prefixWhenValue'] . $replacement;
+                        }
+                        // example: @{$.foo[*].bar}{"suffixWhenValue":"%"}
+                        if (isset($settings['suffixWhenValue'])) {
+                            $replacement = $replacement . $settings['suffixWhenValue'];
+                        }
+                    }
+
+                    // these will add a prefix or suffix to the replacement,
+                    // regardless of whether the replacement is empty or not.
+                    if (isset($settings['prefix'])) {
+                        $replacement = $settings['prefix'] . $replacement;
+                    }
+                    if (isset($settings['suffix'])) {
+                        $replacement = $replacement . $settings['suffix'];
+                    }
+
+                    $replacements[$find] = $replacement;
                 }
                 $newValue = str_replace(array_keys($replacements), array_values($replacements), $value);
                 $this->spreadsheet

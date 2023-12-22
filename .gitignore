@@ -123,3 +123,6 @@ fabric.properties
 .idea/**/azureSettings.xml
 
 # End of https://www.toptal.com/developers/gitignore/api/composer,phpstorm
+
+# openoffice lock files
+/tests/.~lock.*

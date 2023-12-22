@@ -3,7 +3,9 @@
     "php": "~8.2.0",
     "phpoffice/phpspreadsheet": "^1.29.0",
     "psr/simple-cache": "^3.0",
-    "galbar/jsonpath": "^3.0"
+    "galbar/jsonpath": "^3.0",
+    "ext-json": "*",
+    "ext-intl": "*"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
@@ -19,7 +21,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Langmans\\PhpSpreadsheet\\": "src"
+      "Langmans\\SpreadsheetTemplate\\": "src"
     }
   }
 }
